@@ -17,7 +17,7 @@ condition: []
 action:
   - variables:
       current_time: "{{ now().strftime('%I:%M %p') }}"
-      notifications_info: "No specific action triggered at {{ current_time }}"
+      notifications_info: "No specific action triggered at {{ current_time }}."
 
   - choose:
       # 🌅 SUNSET TRIGGER
@@ -30,44 +30,109 @@ action:
                   - condition: template
                     value_template: "{{ now().month in [12,1] }}"
                 sequence:
+                  - type: turn_on
+                    device_id: f8602878860bda85fb405d490e24348c
+                    entity_id: 7643d314be11ddf588aceb1f337d6b60
+                    domain: light
+                    brightness_pct: 100
+                  - type: turn_on
+                    device_id: ec72db41d6ba4ce62a820fcafbe70fd8
+                    entity_id: c3b366477cd3805e6c74d8538dd06ba7
+                    domain: light
+                    brightness_pct: 100
+                  - device_id: f8602878860bda85fb405d490e24348c
+                    domain: select
+                    entity_id: 6cc1c00240f446add3d52c25b5033f7b
+                    type: select_option
+                    option: Xmas-Sweep
+                  - device_id: ec72db41d6ba4ce62a820fcafbe70fd8
+                    domain: select
+                    entity_id: 485f42a7b388f1b631ef249af163eadd
+                    type: select_option
+                    option: Waving Cell
                   - variables:
-                      notifications_info: "🎄 Xmas Lights activated at {{ current_time }}"
+                      notifications_info: 🎄 Xmas Lights activated at {{ current_time }}
               - conditions:
                   - condition: template
                     value_template: "{{ now().month == 2 }}"
                 sequence:
+                  - device_id: f8602878860bda85fb405d490e24348c
+                    domain: select
+                    entity_id: 6cc1c00240f446add3d52c25b5033f7b
+                    type: select_option
+                    option: "Valentine day"
                   - variables:
-                      notifications_info: "❤️ Valentine's Lights activated at {{ current_time }}"
+                      notifications_info: ❤️ Valentine's Lights activated at {{ current_time }}
               - conditions:
                   - condition: template
                     value_template: "{{ now().month == 10 }}"
                 sequence:
+                  - device_id: f8602878860bda85fb405d490e24348c
+                    domain: select
+                    entity_id: 6cc1c00240f446add3d52c25b5033f7b
+                    type: select_option
+                    option: Halloween
                   - variables:
-                      notifications_info: "🎃 Halloween Lights activated at {{ current_time }}"
+                      notifications_info: 🎃 Halloween Lights activated at {{ current_time }}
           - variables:
-              notifications_info: "🌇 Sunset detected! Outdoor lights turned on at {{ current_time }}"
+              notifications_info: >-
+                🌇 Sunset detected! Outdoor lights turned on at {{ current_time
+                }}
 
       # ☀️ SUNRISE TRIGGER
       - conditions:
           - condition: trigger
             id: "sunrise"
         sequence:
+          - type: turn_off
+            device_id: f8602878860bda85fb405d490e24348c
+            entity_id: 7643d314be11ddf588aceb1f337d6b60
+            domain: light
+          - type: turn_off
+            device_id: 81d14a7204c18ae4299592826254460d
+            entity_id: eee06bb9781ee82206f67751aec9581c
+            domain: light
+          - type: turn_off
+            device_id: ec72db41d6ba4ce62a820fcafbe70fd8
+            entity_id: c3b366477cd3805e6c74d8538dd06ba7
+            domain: light
           - variables:
-              notifications_info: "☀️ Sunrise detected! All lights turned off at {{ current_time }}"
+              notifications_info: ☀️ Sunrise detected! All lights turned off at {{ current_time }}
 
       # 🌙 NIGHT-TIME DEFAULT LIGHTING (2 AM)
       - conditions:
           - condition: trigger
             id: "lights_off"
         sequence:
+          - type: turn_off
+            device_id: f8602878860bda85fb405d490e24348c
+            entity_id: 7643d314be11ddf588aceb1f337d6b60
+            domain: light
+          - action: light.turn_on
+            data:
+              kelvin: 6500
+            target:
+              device_id: 0497abedd099681f2b5f5e0457d0eb43
+          - type: turn_off
+            device_id: ec72db41d6ba4ce62a820fcafbe70fd8
+            entity_id: c3b366477cd3805e6c74d8538dd06ba7
+            domain: light
           - variables:
-              notifications_info: "🌙 Night-time mode activated! Adjusting porch lights at {{ current_time }}"
+              notifications_info: >-
+                🌙 Night-time mode activated! Adjusting porch lights at {{
+                current_time }}
 
       # 🕐 NEW 1 PM TRIGGER
       - conditions:
           - condition: trigger
             id: "midday_check"
         sequence:
+          - action: light.turn_on
+            data:
+              brightness_pct: 50
+              rgb_color: [255, 255, 255]
+            target:
+              device_id: 0497abedd099681f2b5f5e0457d0eb43
           - variables:
               notifications_info: "⏰ Midday check: Lights adjusted at {{ current_time }}"
 
