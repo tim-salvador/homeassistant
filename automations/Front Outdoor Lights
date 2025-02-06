@@ -1,0 +1,79 @@
+alias: Front Outdoor Lights
+description: "Automates outdoor lighting with dynamic notifications."
+trigger:
+  - platform: sun
+    event: sunset
+    id: "sunset"
+  - platform: sun
+    event: sunrise
+    id: "sunrise"
+  - platform: time
+    at: "02:00:00"
+    id: "lights_off"
+  - platform: time
+    at: "13:00:00"
+    id: "midday_check"
+condition: []
+action:
+  - variables:
+      current_time: "{{ now().strftime('%I:%M %p') }}"
+      notifications_info: "No specific action triggered at {{ current_time }}"
+
+  - choose:
+      # 🌅 SUNSET TRIGGER
+      - conditions:
+          - condition: trigger
+            id: "sunset"
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ now().month in [12,1] }}"
+                sequence:
+                  - variables:
+                      notifications_info: "🎄 Xmas Lights activated at {{ current_time }}"
+              - conditions:
+                  - condition: template
+                    value_template: "{{ now().month == 2 }}"
+                sequence:
+                  - variables:
+                      notifications_info: "❤️ Valentine's Lights activated at {{ current_time }}"
+              - conditions:
+                  - condition: template
+                    value_template: "{{ now().month == 10 }}"
+                sequence:
+                  - variables:
+                      notifications_info: "🎃 Halloween Lights activated at {{ current_time }}"
+          - variables:
+              notifications_info: "🌇 Sunset detected! Outdoor lights turned on at {{ current_time }}"
+
+      # ☀️ SUNRISE TRIGGER
+      - conditions:
+          - condition: trigger
+            id: "sunrise"
+        sequence:
+          - variables:
+              notifications_info: "☀️ Sunrise detected! All lights turned off at {{ current_time }}"
+
+      # 🌙 NIGHT-TIME DEFAULT LIGHTING (2 AM)
+      - conditions:
+          - condition: trigger
+            id: "lights_off"
+        sequence:
+          - variables:
+              notifications_info: "🌙 Night-time mode activated! Adjusting porch lights at {{ current_time }}"
+
+      # 🕐 NEW 1 PM TRIGGER
+      - conditions:
+          - condition: trigger
+            id: "midday_check"
+        sequence:
+          - variables:
+              notifications_info: "⏰ Midday check: Lights adjusted at {{ current_time }}"
+
+  # 📱 SEND NOTIFICATION AFTER ACTIONS EXECUTE
+  - service: notify.mobile_app_oneplus
+    data:
+      message: "{{ notifications_info }}"
+
+mode: restart
