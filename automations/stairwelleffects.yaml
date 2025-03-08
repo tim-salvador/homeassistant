@@ -1,0 +1,68 @@
+alias: Stair light motion activation
+description: ""
+triggers:
+  - entity_id: binary_sensor.stairwell_effects_pir_sensor_lower
+    from: "off"
+    to: "on"
+    id: pir_sensor_lower
+    trigger: state
+  - entity_id: binary_sensor.stairwell_effects_pir_sensor_upper
+    from: "off"
+    to: "on"
+    id: pir_sensor_upper
+    trigger: state
+conditions:
+  - condition: numeric_state
+    entity_id: sensor.guest_blinds_left_light
+    below: "5"
+    enabled: false
+  - condition: device
+    type: is_off
+    device_id: 7277310392b65fae8aa92fcfae35d175
+    entity_id: dd7607645fc71cfb61832f0f035370f0
+    domain: light
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - pir_sensor_lower
+          - condition: state
+            entity_id: light.stairwell_effects_stair_light
+            state: "off"
+        sequence:
+          - target:
+              entity_id: light.stairwell_effects_stair_light
+            data:
+              effect: Rise light
+            action: light.turn_on
+      - conditions:
+          - condition: trigger
+            id:
+              - pir_sensor_upper
+          - condition: state
+            entity_id: light.stairwell_effects_stair_light
+            state: "off"
+        sequence:
+          - target:
+              entity_id: light.stairwell_effects_stair_light
+            data:
+              effect: Falling light
+            action: light.turn_on
+    default:
+      - target:
+          entity_id: light.stairwell_effects_stair_light
+        data:
+          effect: Simple light
+        action: light.turn_on
+        enabled: false
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 15
+      milliseconds: 0
+  - target:
+      entity_id: light.stairwell_effects_stair_light
+    data: {}
+    action: light.turn_off
+mode: restart
